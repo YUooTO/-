@@ -3,15 +3,13 @@
 using namespace std;
 
 static int arr[]= {3,2,1,4,6,7,16,15,14,13,12,11,10,8,9};
-#define TBL_SIZE(a) ( (sizeof(a)) / (sizeof(a[0])) )
 
 int main()
 {
     int i,ilen,op;
-    AVLTree<int>* tree=new AVLTree<int>();
-
+    ilen = 15;
+    AVLTree<int,int>* tree=new AVLTree<int,int>();
     cout << "== 依次添加: ";
-    ilen = TBL_SIZE(arr);
     for(i=0; i<ilen; i++)
     {
         cout << arr[i] <<" ";
@@ -66,8 +64,8 @@ int main()
     // 销毁二叉树
     tree->destroy();
     // 合并两个avl树。
-    AVLTree<int>* treea=new AVLTree<int>();
-    AVLTree<int>* treeb=new AVLTree<int>();
+    AVLTree<int,int>* treea=new AVLTree<int,int>();
+    AVLTree<int,int>* treeb=new AVLTree<int,int>();
     for (i = 0; i < 5; ++i)
         treea -> insert(arr[i],i);
     for (i = 5; i < 10; ++i)
@@ -76,8 +74,8 @@ int main()
     treea -> print();
     printf("----------------\n");
     // 分裂两个avl树。
-    AVLTree<int>* treec=new AVLTree<int>();
-    AVLTree<int>* treed=new AVLTree<int>();
+    AVLTree<int,int>* treec=new AVLTree<int,int>();
+    AVLTree<int,int>* treed=new AVLTree<int,int>();
     for (i = 0; i < 10; ++i)
         treec -> insert(arr[i],i);
     op = 5;
