@@ -9,12 +9,12 @@ template <class T>
 class AVLTreeNode{
     public:
         T key,value;                // 关键字(键值)
-        int height;         // 高度
+        int height,sz;         // 高度
         AVLTreeNode *left;    // 左孩子
         AVLTreeNode *right;    // 右孩子
 
         AVLTreeNode(T keys, T values, AVLTreeNode *l, AVLTreeNode *r):
-            key(keys),value(values), height(0),left(l),right(r) {}
+            key(keys),value(values), height(0),sz(1),left(l),right(r) {}
 };
 
 template <class T>
@@ -38,10 +38,19 @@ class AVLTree {
         // 后序遍历"AVL树"
         void postOrder();
 
+        // merge 函数
+        void merge(AVLTree<T>* z);
+        void dfs(AVLTreeNode<T> * z);
+        void dfs1(AVLTree<T>*x, AVLTreeNode<T>*y, T z);
+        void split(AVLTree<T>*z, T x);
         // (递归实现)查找"AVL树"中键值为key的节点
         AVLTreeNode<T>* search(T key);
         // (非递归实现)查找"AVL树"中键值为key的节点
         AVLTreeNode<T>* notIterativeSearch(T key);
+
+        // find index number
+        AVLTreeNode<T>* indexsearch(int num);
+        AVLTreeNode<T>* indexsearch(AVLTreeNode<T>* x, int num);
 
         // 查找最小结点：返回最小结点的键值。
         T minimum();
@@ -53,6 +62,10 @@ class AVLTree {
 
         // 删除结点(key为节点键值)
         void remove(T key);
+
+        // update size of node
+        void push(AVLTreeNode<T>* tree);
+        void push();
 
         // 销毁AVL树
         void destroy();
@@ -69,6 +82,8 @@ class AVLTree {
         void inOrder(AVLTreeNode<T>* tree) const;
         // 后序遍历"AVL树"
         void postOrder(AVLTreeNode<T>* tree) const;
+
+        void pushup(AVLTreeNode<T>* tree) const;
 
         // (递归实现)查找"AVL树x"中键值为key的节点
         AVLTreeNode<T>* search(AVLTreeNode<T>* x, T key) const;
@@ -134,6 +149,13 @@ int AVLTree<T>::height(AVLTreeNode<T>* tree)
     return 0;
 }
 
+template<class T>
+void AVLTree<T>::pushup(AVLTreeNode<T>* tree)const {
+    tree -> sz = 1;
+    if (tree -> left != NULL) tree -> sz += tree -> left -> sz;
+    if (tree -> right != NULL) tree -> sz += tree -> right -> sz;
+}
+
 template <class T>
 int AVLTree<T>::height() 
 {
@@ -148,6 +170,20 @@ int AVLTree<T>::max(int a, int b)
     return a>b ? a : b;
 }
 
+// update size of node
+template<class T>
+void AVLTree<T>::push(AVLTreeNode<T>* tree){
+    if (tree != NULL){
+        push(tree -> left);
+        push(tree -> right);
+        pushup(tree);
+    }
+}
+
+template<class T>
+void AVLTree<T>::push(){
+    push(mRoot);
+}
 /*
  * 前序遍历"AVL树"
  */
@@ -177,7 +213,8 @@ void AVLTree<T>::inOrder(AVLTreeNode<T>* tree) const
     if(tree != NULL)
     {
         inOrder(tree->left);
-        cout<< tree->key << " " << tree->value<<endl;
+        // cout<< tree->key << " " << tree->value<<" "<< tree->sz<<endl;
+        cout<< tree -> key<<" ";
         inOrder(tree->right);
     }
 }
@@ -206,6 +243,22 @@ template <class T>
 void AVLTree<T>::postOrder() 
 {
     postOrder(mRoot);
+}
+
+template<class T>
+AVLTreeNode<T>* AVLTree<T>::indexsearch(AVLTreeNode<T>* x, int num){
+    int sum = 0; 
+    if (x -> left != NULL)  sum = x -> left -> sz;
+    if (num > sum){
+        if (num == (sum + 1)) return x;
+        return indexsearch(x->right,num-(sum + 1));
+    } else return indexsearch(x->left,num);
+}
+
+template<class T>
+AVLTreeNode<T>* AVLTree<T>::indexsearch(int num){
+    if (num > mRoot->sz) return NULL;
+    return indexsearch(mRoot,num);
 }
 
 /*
@@ -375,6 +428,7 @@ AVLTreeNode<T>* AVLTree<T>::rightLeftRotation(AVLTreeNode<T>* k1)
  * 返回值：
  *     根节点
  */
+
 template <class T>
 AVLTreeNode<T>* AVLTree<T>::insert(AVLTreeNode<T>* &tree, T key, T value)
 {
@@ -519,6 +573,34 @@ void AVLTree<T>::remove(T key)
     if ((z = search(mRoot, key)) != NULL)
         mRoot = remove(mRoot, z);
 }
+
+template<class T>
+void AVLTree<T>::dfs(AVLTreeNode<T>*z){
+    if (z != NULL) insert(mRoot,z -> key, z -> value);
+    if (z -> left != NULL) dfs(z -> left);
+    if (z -> right != NULL) dfs(z -> right);    
+}
+
+
+template<class T>
+void AVLTree<T>::merge(AVLTree<T>* z){
+    dfs(z -> mRoot);
+}
+
+
+template<class T>
+void AVLTree<T>::dfs1(AVLTree<T>*x, AVLTreeNode<T>*y, T z){
+    if (y != NULL)  if (y -> key > z) x -> insert(y-> key,y->value), remove(y -> key);
+    if (y -> left != NULL) dfs1(x,y->left,z);
+    if (y -> right != NULL) dfs1(x,y->right,z); 
+}
+
+
+template<class T>
+void AVLTree<T>::split(AVLTree<T>*z, T x){
+    dfs1(z, mRoot, x);
+}
+
 
 /* 
  * 销毁AVL树
