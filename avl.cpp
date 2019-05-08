@@ -66,24 +66,30 @@ int main()
     // 合并两个avl树。
     AVLTree<int,int>* treea=new AVLTree<int,int>();
     AVLTree<int,int>* treeb=new AVLTree<int,int>();
+    AVLTree<int,int>* treee = new AVLTree<int,int>();
+
+    printf("----------------\n");
+    cout<<"merge"<<endl;
     for (i = 0; i < 5; ++i)
         treea -> insert(arr[i],i);
     for (i = 5; i < 10; ++i)
         treeb -> insert(arr[i],i);
-    treea -> merge(treeb);
-    treea -> print();
+    treea -> merge(treeb,treee);
+    treee -> print();
     printf("----------------\n");
     // 分裂两个avl树。
+    cout<<"split"<<endl;
+
     AVLTree<int,int>* treec=new AVLTree<int,int>();
     AVLTree<int,int>* treed=new AVLTree<int,int>();
+    AVLTree<int,int>* treef = new AVLTree<int,int>();
     for (i = 0; i < 10; ++i)
         treec -> insert(arr[i],i);
     op = 5;
-    treec -> split(treed,op);
-    treec -> print();
-    printf("------------------\n");
+    treec -> split(treed,treef,op);
     treed -> print();
-
+    printf("------------------\n");
+    treef -> print();
 
     return 0;
 }

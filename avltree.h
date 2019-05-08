@@ -22,7 +22,7 @@ template <class T, class  E>
 class AVLTree {
     private:
         AVLTreeNode<T,E> *mRoot;    // 根结点
-
+        int nodes,len;
     public:
         AVLTree();
         ~AVLTree();
@@ -39,11 +39,12 @@ class AVLTree {
         // 后序遍历"AVL树"
         void postOrder();
 
+        void build(int , int , T* , E *,AVLTreeNode<T,E>* &);
         // merge 函数
-        void merge(AVLTree<T,E>* z);
-        void dfs(AVLTreeNode<T,E> * z);
+        void merge(AVLTree<T,E>* , AVLTree<T,E>*&);
+        void dfs(AVLTreeNode<T,E>* z, T* &, E* &);
         void dfs1(AVLTree<T,E>*x, AVLTreeNode<T,E>*y, T z);
-        void split(AVLTree<T,E>*z, T x);
+        void split(AVLTree<T,E>*&, AVLTree<T,E>*& ,T x);
         // (递归实现)查找"AVL树"中键值为key的节点
         AVLTreeNode<T,E>* search(T key);
         // (非递归实现)查找"AVL树"中键值为key的节点
@@ -127,6 +128,7 @@ class AVLTree {
 template <class T, class  E>
 AVLTree<T,E>::AVLTree():mRoot(NULL)
 {
+    nodes  = 0;
 }
 
 /* 
@@ -437,6 +439,7 @@ AVLTreeNode<T,E>* AVLTree<T,E>::insert(AVLTreeNode<T,E>* &tree, T key, E value)
     {
         // 新建节点
         tree = new AVLTreeNode<T,E>(key, value, NULL, NULL);
+        nodes++;
         if (tree==NULL)
         {
             cout << "ERROR: create avltree node failed!" << endl;
@@ -527,6 +530,7 @@ AVLTreeNode<T,E>* AVLTree<T,E>::remove(AVLTreeNode<T,E>* &tree, AVLTreeNode<T,E>
     }
     else    // tree是对应要删除的节点。
     {
+        nodes--;
         // tree的左右孩子都非空
         if ((tree->left!=NULL) && (tree->right!=NULL))
         {
@@ -576,16 +580,54 @@ void AVLTree<T,E>::remove(T key)
 }
 
 template<class T, class  E>
-void AVLTree<T,E>::dfs(AVLTreeNode<T,E>*z){
-    if (z != NULL) insert(mRoot,z -> key, z -> value);
-    if (z -> left != NULL) dfs(z -> left);
-    if (z -> right != NULL) dfs(z -> right);    
+void AVLTree<T,E>::dfs(AVLTreeNode<T,E>*z, T*&a, E*&b){
+    if (z != NULL){
+        dfs(z -> left,a,b);
+        a[len] =  z->key;
+        b[len++] = z->value;
+        dfs(z -> right,a,b);
+    }
+}
+
+template<class T, class E>
+void AVLTree<T,E>::build(int l, int r, T* a, E *b,AVLTreeNode<T,E>* &now){
+    if (l > r) return;
+    int mid = (l + r) >> 1;
+    now = new AVLTreeNode<T,E>(a[mid],b[mid], NULL, NULL);
+    build(l,mid-1,a,b,now->left);
+    build(mid+1,r,a,b,now->right);
 }
 
 
 template<class T, class  E>
-void AVLTree<T,E>::merge(AVLTree<T,E>* z){
-    dfs(z -> mRoot);
+void AVLTree<T,E>::merge(AVLTree<T,E>* z, AVLTree<T,E>* &w){
+    T *a1,*a2,*a; E *b1,*b2,*b; 
+    int len1,len2,len3 = 1;
+    a1 = new T [100];
+    b1 = new E [100];   
+    a2 = new T [100];
+    b2 = new E [100];
+    a = new T [100]; b = new E [100]; 
+    len = 0;
+    dfs(z -> mRoot,a1,b1);
+    len1 = len;
+    len = 0;
+    dfs(mRoot,a2,b2);
+    len2 = len;
+    int i = 0, j = 0;
+    while(i < len1 && j <  len2){
+        if (a1[i] < a2[j]){
+            a[len3] = a1[i];
+            b[len3++] = b1[i]; i++;
+        } else{
+            a[len3] = a2[j]; 
+            b[len3++] = b2[j]; j++;
+        }
+    }
+    while(i < len1) a[len3] = a1[i],b[len3++] = b1[i++];
+    while(j < len2) a[len3] = a1[j],b[len3++] = b2[j++];
+    build(1,len3-1,a,b,w->mRoot);
+    delete [] a1; delete [] a2; delete [] b1; delete [] b2;
 }
 
 
@@ -598,8 +640,18 @@ void AVLTree<T,E>::dfs1(AVLTree<T,E>*x, AVLTreeNode<T,E>*y, T z){
 
 
 template<class T, class  E>
-void AVLTree<T,E>::split(AVLTree<T,E>*z, T x){
-    dfs1(z, mRoot, x);
+void AVLTree<T,E>::split(AVLTree<T,E>*&z, AVLTree<T,E>*&w ,T x){
+    T *a; E *b; int op=0,l = 1; len = 1; 
+    a = new T [100]; b = new E [100];
+    dfs(mRoot,a,b);
+    for (int i = 1; i < len; ++i)
+        if (a[i] > x) {
+            op = i; break;
+        }
+
+    build(l,op-1,a,b,z->mRoot);
+    build(op,len-1,a,b,w->mRoot);
+
 }
 
 
